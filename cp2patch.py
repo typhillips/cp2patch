@@ -29,6 +29,11 @@ class CP2Patch(object):
 			#   new files
 			# Use difflib.unified_diff() to generate patch files
 			# Somehow come up with a way to generate an error (and/or skip patch file creation) if patch fails
+			#
+			# patch_lines = difflib.unified_diff(file1.readlines(), file2.readlines(), fromfile=os.path.abspath("file1"), tofile=os.path.abspath("file2"))
+
+			# for line in patch_lines:
+			#	sys.stdout.write(line)
 			pass
 
 
