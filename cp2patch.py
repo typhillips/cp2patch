@@ -11,6 +11,7 @@ import sys
 import os
 import difflib
 import argparse
+import subprocess
 
 class CP2Patch(object):
 	def __init__(self, cpnum, hostname=None, username=None, password=None, destination=None):
@@ -46,6 +47,18 @@ class CP2Patch(object):
 		#   Search output to find version number and previous version number
 		#   Add this to the running list
 		# Return list of files with new and old version numbers
+		si_args = ["si"]
+		si_args.append("viewcp")
+		si_args.append("hostname=" + self.hostname)
+		si_args.append("user=" + self.username)
+		si_args.append("password=" + self.password)
+		si_args.append(str("cp"))
+
+		cpinfo = subprocess.check_output(si_args).split("\n")
+
+		for line in cpinfo:
+			#TODO Iterate through CP info and convert to list of files and versions
+			pass
 		return []
 
 
