@@ -11,6 +11,7 @@ import os
 import difflib
 import argparse
 import subprocess
+import re
 
 class CP2Patch(object):
 	def __init__(self, cpnum, hostname=None, port=None, username=None, password=None, exclude=None, include=None, destination=None):
@@ -68,17 +69,48 @@ class CP2Patch(object):
 		viewcp_out = viewcp_out[1:]
 
 		cpinfo = []
+		exts_exclude = []
+		exts_include = []
+
+		# Get file extensions to include or exclude
+		if self.exclude:
+			exts_exclude = self.get_extension_list(self.exclude)
+		elif self.include:
+			exts_include = self.get_extension_list(self.include)
+		else:
+			pass
 
 		for line in viewcp_out:
 			data = line.split()		# Get list of member, project, revision
 
 			if len(data) == 3:		# Ignore any blank lines
 				del data[1]			# Remove project field - list now contains member, revision
-				cpinfo.append(data)
 
-		# TODO Apply file extension filters
+				# File extension filters
+				file_ext = os.path.splitext(data[0])[1].lower()			# Get member's file extension
+
+				# No filters specified OR inclusion filter match OR exclusion filter no match
+				if ( not (exts_include or exts_exclude) or \
+				     (exts_include and (file_ext in exts_include)) or \
+				     (exts_exclude and (file_ext not in exts_exclude))
+				   ):
+					cpinfo.append(data)
+
 		return cpinfo
 
+	def get_extension_list(self, exts):
+		"""Given a string of file extensions, extract these and return a list of file extensions.
+		   Invalid entries are ignored."""
+		exts_list = []
+
+		# Check that each file extension is specified as "*.ext" using regex
+		for item in exts.split():
+			m = re.match('[*][.].+', item)
+
+			if m:
+				exts_list.append(m.group().lstrip('*').lower())	# Extension string as ".ext" (lowercase)
+
+		return exts_list
 
 
 class ShellRun(object):
