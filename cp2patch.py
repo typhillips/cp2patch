@@ -1,4 +1,3 @@
-
 # cp2patch
 #
 # Copyright 2017 Ty Phillips. All Rights Reserved.
@@ -14,15 +13,22 @@ import argparse
 import subprocess
 
 class CP2Patch(object):
-	def __init__(self, cpnum, hostname=None, username=None, password=None, destination=None):
+	def __init__(self, cpnum, hostname=None, port=None, username=None, password=None, exclude=None, include=None, destination=None):
 		self.hostname = hostname
+		self.port = port
 		self.username = username
 		self.password = password
+		self.exclude = exclude
+		self.include = include
 		self.destination = destination
 		self.cpnum = cpnum
 
 	def make_patch(self):
+		"""Create patch files."""
+
+		# First get change package information (list of members and their versions)
 		cpinfo = self.get_cpinfo()
+		print cpinfo #debug
 
 		for filename in cpinfo:
 			#TODO
@@ -40,47 +46,70 @@ class CP2Patch(object):
 
 
 	def get_cpinfo(self):
-		#TODO
-		# Run 'si viewcp' to get list of files and version numbers
-		# For each file
-		#   Run 'si rlog' on each file
-		#   Search output to find version number and previous version number
-		#   Add this to the running list
-		# Return list of files with new and old version numbers
+		""" Returns a list with change package members and their revisions."""
 		si_args = ["si"]
 		si_args.append("viewcp")
-		si_args.append("hostname=" + self.hostname)
-		si_args.append("user=" + self.username)
-		si_args.append("password=" + self.password)
-		si_args.append(str("cp"))
 
-		cpinfo = subprocess.check_output(si_args).split("\n")
+		if self.hostname:
+			si_args.append("--hostname=" + self.hostname)
+		if self.port:
+			si_args.append("--port=" + self.port)
 
-		for line in cpinfo:
-			#TODO Iterate through CP info and convert to list of files and versions
-			pass
-		return []
+		si_args.append("--user=" + self.username)
+		si_args.append("--password=" + self.password)
+		si_args.append("--fields=member,configpath,revision")
+		si_args.append("--noshowPropagationInfo")
+		si_args.append(self.cpnum)
+
+		# This gives us a list of lines of the 'viewcp' output
+		viewcp_out = subprocess.check_output(si_args).split("\n")
+
+		# Strip off first line with change package number and project - we don't need this
+		viewcp_out = viewcp_out[1:]
+
+		cpinfo = []
+
+		for line in viewcp_out:
+			data = line.split()		# Get list of member, project, revision
+
+			if len(data) == 3:		# Ignore any blank lines
+				del data[1]			# Remove project field - list now contains member, revision
+				cpinfo.append(data)
+
+		# TODO Apply file extension filters
+		return cpinfo
 
 
 
 class ShellRun(object):
 	def __init__(self):
-		parser = argparse.ArgumentParser(description="Create PATCH files from Integrity change package.")
-		parser.add_argument("-n", "--hostname", help="Integrity host name")
-		parser.add_argument("-u", "--username", help="Integrity user name")
-		parser.add_argument("-p", "--password", help="Integrity password")
-		parser.add_argument("-d", "--destination", help="destination path for files")
-		parser.add_argument("cp", type=int, help="change package number")
+		parser = argparse.ArgumentParser(description="Create patch files from Integrity change package.")
+		parser.add_argument("--hostname", help="Integrity host name")
+		parser.add_argument("--port", help="port number")
+		parser.add_argument("--username", help="Integrity user name", required=True)
+		parser.add_argument("--password", help="Integrity password", required=True)
+
+		# --include / --exclude  cannot both be used at the same time
+		group = parser.add_mutually_exclusive_group()
+		group.add_argument("--exclude", help="file extensions to exclude")
+		group.add_argument("--include", help="file extensions to include")
+
+		parser.add_argument("--destination", help="destination path for patch files")
+		parser.add_argument("cp", help="change package number")
 		args = parser.parse_args()
 
 		self.hostname = args.hostname
+		self.port = args.port
 		self.username = args.username
 		self.password = args.password
+		self.include = args.include
+		self.exclude = args.exclude
 		self.destination = args.destination
 		self.cpnum = args.cp
 
 	def run(self):
-		cp2patch = CP2Patch(self.cpnum, hostname=self.hostname, password=self.password, destination=self.destination)
+		cp2patch = CP2Patch(self.cpnum, hostname=self.hostname, port=self.port, username=self.username, password=self.password, \
+		                    exclude=self.exclude, include=self.include, destination=self.destination)
 		cp2patch.make_patch()
 
 
