@@ -24,14 +24,73 @@ class CP2Patch(object):
 		self.destination = destination
 		self.cpnum = cpnum
 
+		# Create list of "standard" si arguments that will be used on all Integrity commands
+		self.std_args = []
+
+		if self.hostname:
+			self.std_args.append("--hostname=" + self.hostname)
+		if self.port:
+			self.std_args.append("--port=" + self.port)
+
+		self.std_args.append("--user=" + self.username)
+		self.std_args.append("--password=" + self.password)
+
 	def make_patch(self):
 		"""Create patch files."""
 
-		# First get change package information (list of members and their versions)
+		# First get change package information
 		cpinfo = self.get_cpinfo()
-		print cpinfo #debug
 
-		for filename in cpinfo:
+		# Iterate through each member of change package
+		for item in cpinfo:
+			member = item[0]
+			project = item[1]
+			rev = item[2]
+
+			#---- Determine previous member revision for each member
+			si_args = ["si"]
+			si_args.append("rlog")
+			si_args.append("--project=" + project)	# project path
+			si_args += self.std_args
+			si_args.append("--fields=revision")
+			si_args.append(member)					# member name
+
+			# This gives us a list of lines of the 'rlog' output
+			cmd_out = subprocess.check_output(si_args).split("\n")
+
+			# Get list index with revision number we are interested in and find the next entry
+			#   This is previous revision
+			prev_rev = cmd_out[cmd_out.index(rev) + 1]
+
+			#---- Get member files for old and new revisions
+			si_args = ["si"]
+			si_args.append("viewrevision")
+			si_args.append("-r")
+			si_args.append(prev_rev)
+			si_args.append("--project=" + item[1])	# project path
+			si_args += self.std_args
+			si_args.append(member)					# member name
+
+			# This gives us a list of lines of the 'viewrevision' output
+			old_file = subprocess.check_output(si_args).split("\n")
+
+			si_args = ["si"]
+			si_args.append("viewrevision")
+			si_args.append("-r")
+			si_args.append(rev)
+			si_args.append("--project=" + item[1])	# project path
+			si_args += self.std_args
+			si_args.append(member)					# member name
+
+			# This gives us a list of lines of the 'viewrevision' output
+			new_file = subprocess.check_output(si_args).split("\n")
+
+			#debug-----------------------------------
+			patch_lines = difflib.unified_diff(old_file, new_file, fromfile=os.path.abspath("file1"), tofile=os.path.abspath("file2"))
+			for line in patch_lines:
+				sys.stdout.write(line)
+			#end debug-------------------------------
+
 			#TODO
 			# Run 'si viewrevision' to dump old and new revisions to
 			#   new files
@@ -47,26 +106,19 @@ class CP2Patch(object):
 
 
 	def get_cpinfo(self):
-		""" Returns a list with change package members and their revisions."""
+		""" Returns a list with each change package member, its associated project and its revision."""
 		si_args = ["si"]
 		si_args.append("viewcp")
-
-		if self.hostname:
-			si_args.append("--hostname=" + self.hostname)
-		if self.port:
-			si_args.append("--port=" + self.port)
-
-		si_args.append("--user=" + self.username)
-		si_args.append("--password=" + self.password)
+		si_args += self.std_args
 		si_args.append("--fields=member,configpath,revision")
 		si_args.append("--noshowPropagationInfo")
 		si_args.append(self.cpnum)
 
 		# This gives us a list of lines of the 'viewcp' output
-		viewcp_out = subprocess.check_output(si_args).split("\n")
+		cmd_out = subprocess.check_output(si_args).split("\n")
 
 		# Strip off first line with change package number and project - we don't need this
-		viewcp_out = viewcp_out[1:]
+		cmd_out = cmd_out[1:]
 
 		cpinfo = []
 		exts_exclude = []
@@ -80,12 +132,10 @@ class CP2Patch(object):
 		else:
 			pass
 
-		for line in viewcp_out:
+		for line in cmd_out:
 			data = line.split()		# Get list of member, project, revision
 
 			if len(data) == 3:		# Ignore any blank lines
-				del data[1]			# Remove project field - list now contains member, revision
-
 				# File extension filters
 				file_ext = os.path.splitext(data[0])[1].lower()			# Get member's file extension
 
