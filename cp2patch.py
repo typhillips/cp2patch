@@ -85,14 +85,29 @@ class CP2Patch(object):
 			# List of lines of new file
 			new_file = subprocess.check_output(si_args).splitlines(True)
 
+			# Get member relative path
+			#   Strip off everything up to and include development path name
+			#   For example:
+			#     "#/Project/#d=Subproject/Foo/Bar" --> "Foo/Bar"
+			#     "#/Project/#d=Subproject#Foo/Bar" --> "Foo/Bar"
+			member_path = ""
+			m = re.split("#d=[^#/]+[#/]", project)
+
+			if len(m) > 1:
+				member_path += m[1] + "/"
+
+			# Strip out any remaining "well formed project name" hash characters
+			member_path.replace("#/", "/")
+			member_path.replace("#", "/")
+
+			# Add member file name to end of path
+			member_path += member
+
 			#debug-----------------------------------
-			patch_lines = difflib.unified_diff(old_file, new_file, fromfile=os.path.abspath(member), tofile=os.path.abspath(member))
+			patch_lines = difflib.unified_diff(old_file, new_file, fromfile=member_path, tofile=member_path)
 			for line in patch_lines:
 				sys.stdout.write(line)
 			#end debug-------------------------------
-
-
-
 
 	def get_cpinfo(self):
 		""" Returns a list with each change package member, its associated project and its revision."""
@@ -173,8 +188,8 @@ class ShellRun(object):
 		self.port = args.port
 		self.username = args.username
 		self.password = args.password
-		self.include = args.include
 		self.exclude = args.exclude
+		self.include = args.include
 		self.destination = args.destination
 		self.cpnum = args.cp
 
