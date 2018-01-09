@@ -105,6 +105,15 @@ class CP2Patch(object):
 
 			# Open file for writing
 			filename = os.path.splitext(member)[0] + ".patch"
+
+			# Prepend destination path if specified
+			if self.destination:
+				dir_normalized = os.path.normpath(self.destination)	# Get normalized path Python can understand
+
+				# If invalid path specified, patch files go in current directory
+				if os.path.isdir(dir_normalized):
+					filename = os.path.join(os.path.normpath(self.destination), filename)
+
 			outfile = open(filename, 'wb')	# Use binary mode to prevent extra CR from being created between lines
 
 			# Create patch
@@ -113,6 +122,8 @@ class CP2Patch(object):
 			# Write lines of patch output to file
 			for line in patch_lines:
 				outfile.write(line)
+
+			outfile.close()
 
 
 	def get_cpinfo(self):
