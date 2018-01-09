@@ -50,10 +50,10 @@ class CP2Patch(object):
 			#---- Determine previous member revision for each member
 			si_args = ["si"]
 			si_args.append("rlog")
-			si_args.append("--project=" + project)	# project path
+			si_args.append("--project=" + project)
 			si_args += self.std_args
 			si_args.append("--fields=revision")
-			si_args.append(member)					# member name
+			si_args.append(member)
 
 			# This gives us a list of lines of the 'rlog' output
 			cmd_out = subprocess.check_output(si_args).split("\n")
@@ -67,41 +67,30 @@ class CP2Patch(object):
 			si_args.append("viewrevision")
 			si_args.append("-r")
 			si_args.append(prev_rev)
-			si_args.append("--project=" + item[1])	# project path
+			si_args.append("--project=" + project)
 			si_args += self.std_args
-			si_args.append(member)					# member name
+			si_args.append(member)
 
-			# This gives us a list of lines of the 'viewrevision' output
-			old_file = subprocess.check_output(si_args).split("\n")
+			# List of lines of old file
+			old_file = subprocess.check_output(si_args).splitlines(True)
 
 			si_args = ["si"]
 			si_args.append("viewrevision")
 			si_args.append("-r")
 			si_args.append(rev)
-			si_args.append("--project=" + item[1])	# project path
+			si_args.append("--project=" + project)
 			si_args += self.std_args
-			si_args.append(member)					# member name
+			si_args.append(member)
 
-			# This gives us a list of lines of the 'viewrevision' output
-			new_file = subprocess.check_output(si_args).split("\n")
+			# List of lines of new file
+			new_file = subprocess.check_output(si_args).splitlines(True)
 
 			#debug-----------------------------------
-			patch_lines = difflib.unified_diff(old_file, new_file, fromfile=os.path.abspath("file1"), tofile=os.path.abspath("file2"))
+			patch_lines = difflib.unified_diff(old_file, new_file, fromfile=os.path.abspath(member), tofile=os.path.abspath(member))
 			for line in patch_lines:
 				sys.stdout.write(line)
 			#end debug-------------------------------
 
-			#TODO
-			# Run 'si viewrevision' to dump old and new revisions to
-			#   new files
-			# Use difflib.unified_diff() to generate patch files
-			# Somehow come up with a way to generate an error (and/or skip patch file creation) if patch fails
-			#
-			# patch_lines = difflib.unified_diff(file1.readlines(), file2.readlines(), fromfile=os.path.abspath("file1"), tofile=os.path.abspath("file2"))
-
-			# for line in patch_lines:
-			#	sys.stdout.write(line)
-			pass
 
 
 
