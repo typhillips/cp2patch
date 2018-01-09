@@ -103,11 +103,17 @@ class CP2Patch(object):
 			# Add member file name to end of path
 			member_path += member
 
-			#debug-----------------------------------
+			# Open file for writing
+			filename = os.path.splitext(member)[0] + ".patch"
+			outfile = open(filename, 'wb')	# Use binary mode to prevent extra CR from being created between lines
+
+			# Create patch
 			patch_lines = difflib.unified_diff(old_file, new_file, fromfile=member_path, tofile=member_path)
+
+			# Write lines of patch output to file
 			for line in patch_lines:
-				sys.stdout.write(line)
-			#end debug-------------------------------
+				outfile.write(line)
+
 
 	def get_cpinfo(self):
 		""" Returns a list with each change package member, its associated project and its revision."""
