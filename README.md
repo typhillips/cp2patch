@@ -73,18 +73,20 @@ To use the library, an instance of the CP2Patch object is first created with the
 * *include*: A string of file extensions to include (same format as *exclude*). Cannot be used in conjunction with *exclude* parameter.
 * *destination*: Destination path for resulting patch files. Default is current directory.
 
+**Note:** All parameters are passed as strings.
+
 After this, the make_patch() method is called to pull the change package information from the specified server, extract the change package members and diffs, and create the patch files. One patch file is specified for each change package member.
 
 **Example:**
 
 ```
-cp2patch = CP2Patch(cpnum, "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png")
+cp2patch = CP2Patch("345", "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png")
 cp2patch.make_patch()
 ```
 The *destination* parameter, just as with the *--destination* argument to the command line invocation, supports both Windows and Unix style paths. Either of the following are valid:
 ```
-cp2patch = CP2Patch(cpnum, "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:\Users\foo_bar\Patches")
+cp2patch = CP2Patch("4080", "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:\Users\foo_bar\Patches")
 
-cp2patch = CP2Patch(cpnum, "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:/Users/foo_bar/Patches")
+cp2patch = CP2Patch("4080", "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:/Users/foo_bar/Patches")
 
 ```
