@@ -16,6 +16,9 @@ If you are unfortunate enough to have to deal with the virus.... err, SCCM... th
 ## License
 Free software, according to the terms of the [license agreement](LICENSE.md).
 
+## Disclaimer
+This program is still in active development, and although feature complete, testing at this point is extremely limited.
+
 ## Usage
 
 ### As a Command Line Script
