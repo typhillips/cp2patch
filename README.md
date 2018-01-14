@@ -63,7 +63,7 @@ python cp2patch.py --hostname myserver.integrity.com --port 80 --username foo_ba
 
 To use the library, an instance of the CP2Patch object is first created with the appropriate parameters.
 
-\_\_init\_\_(*cpnum*, *hostname=*None, *port=*None, *username=*None, *password=*None, *exclude=*None, *include=*None, *destination=*None)
+\_\_init\_\_(*cpnum*, hostname=None, port=None, username=None, password=None, exclude=None, include=None, destination=None)
 
 * *cpnum*: Specifies the Integrity change package number.
 * *hostname*: Integrity host name to connect to.
@@ -80,13 +80,13 @@ After this, the make_patch() method is called to pull the change package informa
 **Example:**
 
 ```
-cp2patch = CP2Patch("345", "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png")
+cp2patch = CP2Patch("345", hostname="myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png")
 cp2patch.make_patch()
 ```
 The *destination* parameter, just as with the *--destination* argument to the command line invocation, supports both Windows and Unix style paths. Either of the following are valid:
 ```
-cp2patch = CP2Patch("4080", "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:\Users\foo_bar\Patches")
+cp2patch = CP2Patch("4080:1", hostname="myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:\Users\foo_bar\Patches")
 
-cp2patch = CP2Patch("4080", "myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:/Users/foo_bar/Patches")
+cp2patch = CP2Patch("4080:1", hostname="myserver.integrity.com", port="80", username="foo_bar", password="she_bang", exclude="*.exe *.png", destination="c:/Users/foo_bar/Patches")
 
 ```
