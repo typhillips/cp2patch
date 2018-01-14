@@ -104,7 +104,8 @@ class CP2Patch(object):
 			member_path += member
 
 			# Open file for writing
-			filename = os.path.splitext(member)[0] + ".patch"
+			#   Patch file naming convention: "foobar.c" becomes "foobar_c.patch"
+			filename = os.path.splitext(member)[0] + "_" + os.path.splitext(member)[1] + ".patch"
 
 			# Prepend destination path if specified
 			if self.destination:
