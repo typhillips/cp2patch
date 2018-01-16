@@ -26,7 +26,7 @@ class CP2PatchBin(cp2patch.CP2Patch):
 			rev = item[2]
 
 			# Get previous member revision
-			prev_rev = self.get_prev_rev(member, project, rev)
+			prev_rev = self.get_prev_rev(rev)
 
 			#---- Get member files for old and new revisions
 			si_args = ["si"]

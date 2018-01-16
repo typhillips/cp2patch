@@ -47,7 +47,7 @@ class CP2Patch(object):
 			rev = item[2]
 
 			# Get previous member revision
-			prev_rev = self.get_prev_rev(member, project, rev)
+			prev_rev = self.get_prev_rev(rev)
 
 			#---- Get member files for old and new revisions
 			si_args = ["si"]
@@ -157,23 +157,35 @@ class CP2Patch(object):
 
 		return cpinfo
 
-	def get_prev_rev(self, member, project, rev):
-		"""Given a member, project and revision, return the previous revision of the member."""
-		si_args = ["si"]
-		si_args.append("rlog")
-		si_args.append("--project=" + project)
-		si_args += self.std_args
-		si_args.append("--fields=revision")
-		si_args.append(member)
+	def get_prev_rev(self, rev):
+		"""Given an Integrity revision number as a string, derive and return its previous (base) revision,
+		   also as a string."""
+		sep = "."							# Separator character is decimal point
 
-		# This gives us a list of lines of the 'rlog' output
-		cmd_out = subprocess.check_output(si_args).split("\n")
+		# Convert revision string to list of individual digits (as strings)
+		revlist = rev.split(sep)
 
-		# Get list index with revision number we are interested in and find the next entry
-		#   This is previous revision
-		prev_rev = cmd_out[cmd_out.index(rev) + 1]
+		# According to PTC documentation, a two part rev # (e.g. "1.4", "1.19") indicates
+		#   that we are in the 'trunk' (main line)
+		if len(revlist) == 2:
+			# Current revision is the same as previous revision, with rightmost number
+			#  decremented by 1 (e.g. "1.5" becomes "1.4", "1.30" becomes "1.29")
+			if int(revlist[-1]) != 1:
+				prev_revlist = revlist[:-1] + [str(int(revlist[-1])-1)]
+			# TODO determine if this is a valid situation (e.g. "2.1")
+			else:
+				prev_revlist = None
+		else:
+			# If rightmost number is "1", previous revision is current revision with last two
+			#   numbers removed (e.g. "1.5.2.1" becomes "1.5")
+			if int(revlist[-1]) == 1:
+				prev_revlist = revlist[:-2]
+			# Otherwise, current revision is same as previous revision, with rightmost
+			#   number decremented by 1 (e.g. "1.54.1.1.1.10" becomes "1.54.1.1.1.9")
+			else:
+				prev_revlist = revlist[:-1] + [str(int(revlist[-1])-1)]
 
-		return prev_rev
+		return sep.join(prev_revlist)
 
 	def get_extension_list(self, exts):
 		"""Given a string of file extensions, extract these and return a list of file extensions.
