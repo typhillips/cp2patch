@@ -1,6 +1,6 @@
 # cp2patch
 #
-# Copyright 2017 Ty Phillips. All Rights Reserved.
+# Copyright 2018 Ty Phillips. All Rights Reserved.
 # This program is free software. You can redistribute and/or modify it in
 # accordance with the terms of the accompanying license agreement.
 
@@ -47,20 +47,8 @@ class CP2Patch(object):
 			project = item[1]
 			rev = item[2]
 
-			#---- Determine previous member revision for each member
-			si_args = ["si"]
-			si_args.append("rlog")
-			si_args.append("--project=" + project)
-			si_args += self.std_args
-			si_args.append("--fields=revision")
-			si_args.append(member)
-
-			# This gives us a list of lines of the 'rlog' output
-			cmd_out = subprocess.check_output(si_args).split("\n")
-
-			# Get list index with revision number we are interested in and find the next entry
-			#   This is previous revision
-			prev_rev = cmd_out[cmd_out.index(rev) + 1]
+			# Get previous member revision
+			prev_rev = self.get_prev_rev(member, project, rev)
 
 			#---- Get member files for old and new revisions
 			si_args = ["si"]
@@ -169,6 +157,24 @@ class CP2Patch(object):
 					cpinfo.append(data)
 
 		return cpinfo
+
+	def get_prev_rev(self, member, project, rev):
+		"""Given a member, project and revision, return the previous revision of the member."""
+		si_args = ["si"]
+		si_args.append("rlog")
+		si_args.append("--project=" + project)
+		si_args += self.std_args
+		si_args.append("--fields=revision")
+		si_args.append(member)
+
+		# This gives us a list of lines of the 'rlog' output
+		cmd_out = subprocess.check_output(si_args).split("\n")
+
+		# Get list index with revision number we are interested in and find the next entry
+		#   This is previous revision
+		prev_rev = cmd_out[cmd_out.index(rev) + 1]
+
+		return prev_rev
 
 	def get_extension_list(self, exts):
 		"""Given a string of file extensions, extract these and return a list of file extensions.
