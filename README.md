@@ -5,13 +5,17 @@ If you are unfortunate enough to have to deal with the virus.... err, SCCM... th
 
 ## Features
 * Combined command line script and Python library
-* File extension filters to skip members that shouldn't technically be in your Integrity project (for example, binary files)
+* File extension filters to skip members that cannot be patched
 * Patch files generated in unified diff format
+* Binary file capability
 
 ## Requirements
-* Windows only (could theoretically work on Linux systems, but untested)
 * Python 2.7.x (Python3 support planned in future)
 * PTC Integrity (currently tested with version 10.6)
+
+## Limitations
+* Windows only (could theoretically work on Linux systems, but untested)
+* Might not work correctly for Integrity revision numbers that are manually assigned during check in - this is due to the fact that the previous revision number of a given member revision must be derived manually since the Integrity CLI cannot report it
 
 ## License
 Free software, according to the terms of the [license agreement](LICENSE.md).
@@ -23,6 +27,7 @@ This program is still in active development, and although feature complete, test
 
 ### As a Command Line Script
 
+#### For text files:
 ```
 usage: cp2patch.py [-h] [--hostname HOSTNAME] [--port PORT] --username
                    USERNAME --password PASSWORD
@@ -31,6 +36,31 @@ usage: cp2patch.py [-h] [--hostname HOSTNAME] [--port PORT] --username
                    cp
 
 Create patch files from Integrity change package.
+
+positional arguments:
+  cp                    change package number
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --hostname HOSTNAME   Integrity host name
+  --port PORT           port number
+  --username USERNAME   Integrity user name
+  --password PASSWORD   Integrity password
+  --exclude EXCLUDE     file extensions to exclude
+  --include INCLUDE     file extensions to include
+  --destination DESTINATION
+                        destination path for patch files
+
+```
+#### For binary files:
+```
+usage: cp2patch-bin.py [-h] [--hostname HOSTNAME] [--port PORT] --username
+                       USERNAME --password PASSWORD
+                       [--exclude EXCLUDE | --include INCLUDE]
+                       [--destination DESTINATION]
+                       cp
+
+Create binary patch files from Integrity change package.
 
 positional arguments:
   cp                    change package number
@@ -59,9 +89,14 @@ Create patch files for change package 4080 in *C:\Temp\Patch*. Exclude .out and 
 python cp2patch.py --hostname myserver.integrity.com --port 80 --username foo_bar --password she_bang --exclude="*.out *.bin" --destination="C:\Temp\Patch" 4080
 ```
 
+Create binary patches for all *.bin files in change package 1028:2:
+```
+python cp2patch-bin.py --hostname myserver.integrity.com --port 80 --username foo_bar --password she_bang --include="*.bin" 1028:2
+```
+
 ### As a Library
 
-To use the library, an instance of the CP2Patch object is first created with the appropriate parameters.
+To use the library, an instance of the CP2Patch or CP2PatchBin (for binary files) object is first created with the appropriate parameters.
 
 \_\_init\_\_(*cpnum*, hostname=None, port=None, username=None, password=None, exclude=None, include=None, destination=None)
 
