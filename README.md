@@ -12,6 +12,7 @@ If you are unfortunate enough to have to deal with the virus.... err, SCCM... th
 ## Requirements
 * Python 2.7.x (Python3 support planned in future)
 * PTC Integrity (currently tested with version 10.6)
+* bsdiff4 module (for binary patch)
 
 ## Limitations
 * Windows only (could theoretically work on Linux systems, but untested)
