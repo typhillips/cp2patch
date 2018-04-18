@@ -6,6 +6,8 @@
 
 #!/usr/bin/env python
 
+from builtins import str
+from builtins import object
 import os
 import difflib
 import argparse
@@ -13,7 +15,7 @@ import subprocess
 import re
 
 class CP2Patch(object):
-	def __init__(self, cpnum, hostname=None, port=None, username=None, password=None, exclude=None, include=None, destination=None):
+	def __init__(self, cpnum, hostname=None, port=None, username=None, password=None, exclude=None, include=None, destination=None, encoding='ascii'):
 		self.hostname = hostname
 		self.port = port
 		self.username = username
@@ -21,6 +23,7 @@ class CP2Patch(object):
 		self.exclude = exclude
 		self.include = include
 		self.destination = destination
+		self.encoding = encoding
 		self.cpnum = cpnum
 
 		# Create list of "standard" si arguments that will be used on all Integrity commands
@@ -59,7 +62,7 @@ class CP2Patch(object):
 			si_args.append(member)
 
 			# List of lines of old file
-			old_file = subprocess.check_output(si_args).splitlines(True)
+			old_file = str(subprocess.check_output(si_args), self.encoding).splitlines(True)
 
 			si_args = ["si"]
 			si_args.append("viewrevision")
@@ -70,7 +73,7 @@ class CP2Patch(object):
 			si_args.append(member)
 
 			# List of lines of new file
-			new_file = subprocess.check_output(si_args).splitlines(True)
+			new_file = str(subprocess.check_output(si_args), self.encoding).splitlines(True)
 
 			# Get member relative path
 			#   Strip off everything up to and include development path name
@@ -109,7 +112,7 @@ class CP2Patch(object):
 
 			# Write lines of patch output to file
 			for line in patch_lines:
-				outfile.write(line)
+				outfile.write(line.encode(self.encoding))
 
 			outfile.close()
 
@@ -124,10 +127,10 @@ class CP2Patch(object):
 		si_args.append(self.cpnum)
 
 		# This gives us a list of lines of the 'viewcp' output
-		cmd_out = subprocess.check_output(si_args).split("\n")
+		cmd_out = str(subprocess.check_output(si_args), self.encoding).split("\n")
 
-		# Strip off first line with change package number and project - we don't need this
-		cmd_out = cmd_out[1:]
+		# Strip off first two lines with change package and author info - we don't need this
+		cmd_out = cmd_out[2:]
 
 		cpinfo = []
 		exts_exclude = []
@@ -214,8 +217,8 @@ class ShellRun(object):
 		group = parser.add_mutually_exclusive_group()
 		group.add_argument("--exclude", help="file extensions to exclude")
 		group.add_argument("--include", help="file extensions to include")
-
 		parser.add_argument("--destination", help="destination path for patch files")
+		parser.add_argument("--encoding", help="set character encoding used for Integrity CLI output")
 		parser.add_argument("cp", help="change package number")
 		args = parser.parse_args()
 
@@ -226,11 +229,12 @@ class ShellRun(object):
 		self.exclude = args.exclude
 		self.include = args.include
 		self.destination = args.destination
+		self.encoding = args.encoding
 		self.cpnum = args.cp
 
 	def run(self):
 		cp2patch = CP2Patch(self.cpnum, hostname=self.hostname, port=self.port, username=self.username, password=self.password, \
-		                    exclude=self.exclude, include=self.include, destination=self.destination)
+		                    exclude=self.exclude, include=self.include, destination=self.destination, encoding=self.encoding)
 		cp2patch.make_patch()
 
 
