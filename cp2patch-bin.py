@@ -6,6 +6,7 @@
 
 #!/usr/bin/env python
 
+from builtins import object
 import os
 import argparse
 import subprocess
