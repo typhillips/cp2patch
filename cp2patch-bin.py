@@ -40,7 +40,7 @@ class CP2PatchBin(cp2patch.CP2Patch):
 
 			# String representing old file
 			old_file_st = subprocess.check_output(si_args)
-
+			
 			si_args = ["si"]
 			si_args.append("viewrevision")
 			si_args.append("-r")
@@ -51,7 +51,7 @@ class CP2PatchBin(cp2patch.CP2Patch):
 
 			# String representing new file
 			new_file_st = subprocess.check_output(si_args)
-
+			
 			# Open file for writing
 			#   Binary patch file naming convention: "foobar.out" becomes "foobar_out.bsdiff"
 			filename = os.path.splitext(member)[0] + "_" + os.path.splitext(member)[1].lstrip(".") + ".bsdiff"
@@ -89,6 +89,7 @@ class ShellRun(object):
 		group.add_argument("--include", help="file extensions to include")
 
 		parser.add_argument("--destination", help="destination path for patch files")
+		parser.add_argument("--encoding", help="set character encoding used for Integrity CLI output")
 		parser.add_argument("cp", help="change package number")
 		args = parser.parse_args()
 
@@ -99,11 +100,12 @@ class ShellRun(object):
 		self.exclude = args.exclude
 		self.include = args.include
 		self.destination = args.destination
+		self.encoding = args.encoding
 		self.cpnum = args.cp
 
 	def run(self):
 		cp2patch = CP2PatchBin(self.cpnum, hostname=self.hostname, port=self.port, username=self.username, password=self.password, \
-		                    exclude=self.exclude, include=self.include, destination=self.destination)
+		                    exclude=self.exclude, include=self.include, destination=self.destination, encoding=self.encoding)
 		cp2patch.make_patch()
 
 
