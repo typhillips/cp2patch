@@ -10,9 +10,9 @@ If you are unfortunate enough to have to deal with the virus.... err, SCCM... th
 * Binary file capability
 
 ## Requirements
-* Python 2.7.x (Python3 support planned in future)
+* Python 2.7 / 3.6
 * PTC Integrity (currently tested with version 10.6)
-* bsdiff4 module (for binary patch)
+* [bsdiff4](https://pypi.org/project/bsdiff4/) module (for binary patch)
 
 ## Limitations
 * Windows only (could theoretically work on Linux systems, but untested)
@@ -33,7 +33,7 @@ This program is still in active development, and although feature complete, test
 usage: cp2patch.py [-h] [--hostname HOSTNAME] [--port PORT] --username
                    USERNAME --password PASSWORD
                    [--exclude EXCLUDE | --include INCLUDE]
-                   [--destination DESTINATION]
+                   [--destination DESTINATION] [--encoding ENCODING]
                    cp
 
 Create patch files from Integrity change package.
@@ -51,6 +51,7 @@ optional arguments:
   --include INCLUDE     file extensions to include
   --destination DESTINATION
                         destination path for patch files
+  --encoding ENCODING   set character encoding used for Integrity CLI output
 
 ```
 #### For binary files:
@@ -58,7 +59,7 @@ optional arguments:
 usage: cp2patch-bin.py [-h] [--hostname HOSTNAME] [--port PORT] --username
                        USERNAME --password PASSWORD
                        [--exclude EXCLUDE | --include INCLUDE]
-                       [--destination DESTINATION]
+                       [--destination DESTINATION] [--encoding ENCODING]
                        cp
 
 Create binary patch files from Integrity change package.
@@ -76,6 +77,7 @@ optional arguments:
   --include INCLUDE     file extensions to include
   --destination DESTINATION
                         destination path for patch files
+  --encoding ENCODING   set character encoding used for Integrity CLI output
 ```
 
 **Examples:**
@@ -88,6 +90,11 @@ python cp2patch.py --hostname myserver.integrity.com --port 80 --username foo_ba
 Create patch files for change package 4080 in *C:\Temp\Patch*. Exclude .out and .bin files:
 ```
 python cp2patch.py --hostname myserver.integrity.com --port 80 --username foo_bar --password she_bang --exclude="*.out *.bin" --destination="C:\Temp\Patch" 4080
+```
+
+Create patch files for change package 229:3. Exclude .srec files. Use Arabic encoding:
+```
+python cp2patch.py --hostname myserver.integrity.com --port 80 --username foo_bar --password she_bang --exclude="*.srec" --encoding="iso8859_6" 229:3
 ```
 
 Create binary patches for all *.bin files in change package 1028:2:
@@ -108,6 +115,7 @@ To use the library, an instance of the CP2Patch or CP2PatchBin (for binary files
 * *exclude*: A string of file extensions to exclude (ex. "*.out *.bin"). Cannot be used in conjunction with *include* parameter.
 * *include*: A string of file extensions to include (same format as *exclude*). Cannot be used in conjunction with *exclude* parameter.
 * *destination*: Destination path for resulting patch files. Default is current directory.
+* *encoding*: Set character encoding for Integrity CLI output. Default is ASCII.
 
 **Note:** All parameters are passed as strings.
 
