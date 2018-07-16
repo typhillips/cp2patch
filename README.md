@@ -5,7 +5,7 @@ If you are unfortunate enough to have to deal with the virus.... err, SCCM... th
 
 ## Features
 * Combined command line script and Python library
-* File extension filters to skip members that cannot be patched
+* File extension and string matching filters to skip members that cannot be patched
 * Patch files generated in unified diff format
 * Binary file capability
 
@@ -49,6 +49,10 @@ optional arguments:
   --password PASSWORD   Integrity password
   --exclude EXCLUDE     file extensions to exclude
   --include INCLUDE     file extensions to include
+  --nomatch NOMATCH     member filenames containing this string will be
+                        excluded
+  --match MATCH         member filenames containing this string will be
+                        included
   --destination DESTINATION
                         destination path for patch files
   --encoding ENCODING   set character encoding used for Integrity CLI output
@@ -75,6 +79,10 @@ optional arguments:
   --password PASSWORD   Integrity password
   --exclude EXCLUDE     file extensions to exclude
   --include INCLUDE     file extensions to include
+  --nomatch NOMATCH     member filenames containing this string will be
+                        excluded
+  --match MATCH         member filenames containing this string will be
+                        included
   --destination DESTINATION
                         destination path for patch files
   --encoding ENCODING   set character encoding used for Integrity CLI output
@@ -97,6 +105,11 @@ Create patch files for change package 229:3. Exclude .srec files. Use Arabic enc
 python cp2patch.py --hostname myserver.integrity.com --port 80 --username foo_bar --password she_bang --exclude="*.srec" --encoding="iso8859_6" 229:3
 ```
 
+Create patch files for change package 1028:2. Include only *.h files containing the string "definition":
+```
+python cp2patch.py --hostname myserver.integrity.com --port 80 --username foo_bar --password she_bang --include="*.h" --match="definition" 1028:2
+```
+
 Create binary patches for all *.bin files in change package 1028:2:
 ```
 python cp2patch-bin.py --hostname myserver.integrity.com --port 80 --username foo_bar --password she_bang --include="*.bin" 1028:2
@@ -114,6 +127,8 @@ To use the library, an instance of the CP2Patch or CP2PatchBin (for binary files
 * *password*: Integrity password for specified user name.
 * *exclude*: A string of file extensions to exclude (ex. "*.out *.bin"). Cannot be used in conjunction with *include* parameter.
 * *include*: A string of file extensions to include (same format as *exclude*). Cannot be used in conjunction with *exclude* parameter.
+* *nomatch*: Members with filenames containing this string will be excluded. Cannot be used in conjunction with *match* parameter.
+* *match*: Only members with filenames containing this string will be included. Cannot be used in conjunction with *nomatch* parameter.
 * *destination*: Destination path for resulting patch files. Default is current directory.
 * *encoding*: Set character encoding for Integrity CLI output. Default is ASCII.
 
