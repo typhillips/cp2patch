@@ -214,8 +214,8 @@ class CP2Patch(object):
 
 
 class ShellRun(object):
-	def __init__(self):
-		parser = argparse.ArgumentParser(description="Create patch files from Integrity change package.")
+	def __init__(self, desc="Create patch files from Integrity change package."):
+		parser = argparse.ArgumentParser(description=desc)
 		parser.add_argument("--hostname", help="Integrity host name")
 		parser.add_argument("--port", help="port number")
 		parser.add_argument("--username", help="Integrity user name", required=True)
