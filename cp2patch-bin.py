@@ -88,6 +88,11 @@ class ShellRun(object):
 		group.add_argument("--exclude", help="file extensions to exclude")
 		group.add_argument("--include", help="file extensions to include")
 
+		# --match / --nomatch cannot both be used at the same time
+		group = parser.add_mutually_exclusive_group()
+		group.add_argument("--nomatch", help="member filenames containing this string will be excluded")
+		group.add_argument("--match", help="member filenames containing this string will be included")
+
 		parser.add_argument("--destination", help="destination path for patch files")
 		parser.add_argument("--encoding", help="set character encoding used for Integrity CLI output")
 		parser.add_argument("cp", help="change package number")
@@ -99,13 +104,16 @@ class ShellRun(object):
 		self.password = args.password
 		self.exclude = args.exclude
 		self.include = args.include
+		self.match = args.match
+		self.nomatch = args.nomatch
 		self.destination = args.destination
 		self.encoding = args.encoding
 		self.cpnum = args.cp
 
 	def run(self):
 		cp2patch = CP2PatchBin(self.cpnum, hostname=self.hostname, port=self.port, username=self.username, password=self.password, \
-		                    exclude=self.exclude, include=self.include, destination=self.destination, encoding=self.encoding)
+		                    exclude=self.exclude, include=self.include, nomatch=self.nomatch, match=self.match, \
+							destination=self.destination, encoding=self.encoding)
 		cp2patch.make_patch()
 
 
